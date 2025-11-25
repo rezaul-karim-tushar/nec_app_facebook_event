@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:facebook_app_events/facebook_app_events.dart';
+import 'facebook_event_sdk.dart';
 
-void main() => runApp(const MyApp());
+void main() {
+  runApp(const MyApp());
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Facebook SDK Demo',
+      title: 'Facebook Event SDK Demo',
       home: const HomePage(),
     );
   }
@@ -16,35 +19,56 @@ class MyApp extends StatelessWidget {
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  final facebookAppEvents = FacebookAppEvents();
+  final FacebookEventSDK _sdk = FacebookEventSDK.instance;
 
   @override
   void initState() {
     super.initState();
-    // Log app install/open event
-    facebookAppEvents.logEvent(name: 'fb_mobile_activate_app');
+    _sdk.initialize();
   }
 
-  void _logSignup() {
-    facebookAppEvents.logEvent(name: 'fb_mobile_complete_registration');
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Signup event sent')),
-    );
+  Future<void> _trackRegistration() async {
+    await _sdk.trackRegistration();
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Registration event sent')),
+      );
+    }
+  }
+
+  Future<void> _trackMoneyTransfer() async {
+    await _sdk.trackMoneyTransfer();
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Money transfer event sent')),
+      );
+    }
   }
 
   @override
-  Widget build(BuildContext c) {
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('FB SDK Demo')),
       body: Center(
-        child: ElevatedButton(
-          onPressed: _logSignup,
-          child: const Text('Log Signup Event'),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: _trackRegistration,
+              child: const Text('Track Registration Event'),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _trackMoneyTransfer,
+              child: const Text('Track Money Transfer Event'),
+            ),
+          ],
         ),
       ),
     );
